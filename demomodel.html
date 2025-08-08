@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VoiceFlow - Elegant Text-to-Speech</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            50: '#f5f3ff',
+                            100: '#ede9fe',
+                            200: '#ddd6fe',
+                            300: '#c4b5fd',
+                            400: '#a78bfa',
+                            500: '#8b5cf6',
+                            600: '#7c3aed',
+                            700: '#6d28d9',
+                            800: '#5b21b6',
+                            900: '#4c1d95',
+                        },
+                        secondary: {
+                            400: '#38bdf8',
+                            500: '#0ea5e9',
+                            600: '#0284c7'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        serif: ['Playfair Display', 'serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    <style>
+        .soft-shadow {
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        }
+        .voice-wave-bg {
+            background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M50 50c0-5.523-4.477-10-10-10s-10 4.477-10 10 4.477 10 10 10 10-4.477 10-10zm0-30c0-5.523-4.477-10-10-10s-10 4.477-10 10 4.477 10 10 10 10-4.477 10-10zm0-30C50 4.477 45.523 0 40 0S30 4.477 30 10s4.477 10 10 10 10-4.477 10-10z' fill='%23ddd6fe' fill-opacity='0.1' fill-rule='evenodd'/%3E%3C/svg%3E");
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-gray-50 to-gray-100 min-h-screen font-sans text-gray-800">
+    <div class="container mx-auto px-4 py-12">
+        <div class="max-w-3xl mx-auto">
+            <div class="text-center mb-12">
+                <h1 class="text-4xl md:text-5xl font-serif font-medium text-gray-900 mb-3">
+                    VoiceFlow
+                </h1>
+                <p class="text-lg text-gray-600">Transform text into natural sounding speech</p>
+            </div>
+
+            <div class="bg-white rounded-xl border border-gray-200 p-6 md:p-8 voice-wave-bg soft-shadow">
+                <div class="space-y-6">
+                    <div>
+                        <label for="voices" class="block text-sm font-medium text-gray-700 mb-2">Select Voice</label>
+                        <select id="voices" name="voice" 
+                            class="w-full bg-white border border-gray-300 rounded-lg px-4 py-3 text-gray-800 focus:ring-2 focus:ring-primary-400 focus:border-primary-400 outline-none transition shadow-sm">
+                            <option value="">Loading voices...</option>
+                        </select>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label for="rate" class="block text-sm font-medium text-gray-700 mb-2">Speed: <span id="rate-value" class="text-primary-600">1</span></label>
+                            <input type="range" id="rate" name="rate" min="0.5" max="2" value="1" step="0.1" 
+                                class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-primary-500">
+                        </div>
+                        <div>
+                            <label for="pitch" class="block text-sm font-medium text-gray-700 mb-2">Pitch: <span id="pitch-value" class="text-primary-600">1</span></label>
+                            <input type="range" id="pitch" name="pitch" min="0.5" max="1.5" value="1" step="0.1" 
+                                class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-primary-500">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label for="text" class="block text-sm font-medium text-gray-700 mb-2">Enter Text</label>
+                        <textarea id="text" name="text" rows="6" 
+                            class="w-full bg-white border border-gray-300 rounded-lg px-4 py-3 text-gray-800 focus:ring-2 focus:ring-primary-400 focus:border-primary-400 outline-none transition shadow-sm"
+                            placeholder="Type or paste your text here...">Welcome to VoiceFlow, the elegant text-to-speech converter. Enjoy the natural sounding voices!</textarea>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2">
+                        <button id="speak" 
+                            class="bg-primary-500 hover:bg-primary-600 text-white font-medium py-3 px-6 rounded-lg transition-all flex items-center justify-center space-x-2 shadow-md hover:shadow-lg">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd" />
+                            </svg>
+                            <span>Speak</span>
+                        </button>
+                        <button id="stop" 
+                            class="bg-gray-100 hover:bg-gray-200 text-gray-800 font-medium py-3 px-6 rounded-lg transition-all flex items-center justify-center space-x-2 shadow-md hover:shadow-lg">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8 7a1 1 0 00-1 1v4a1 1 0 001 1h4a1 1 0 001-1V8a1 1 0 00-1-1H8z" clip-rule="evenodd" />
+                            </svg>
+                            <span>Stop</span>
+                        </button>
+                        <button id="download" 
+                            class="bg-emerald-500 hover:bg-emerald-600 text-white font-medium py-3 px-6 rounded-lg transition-all flex items-center justify-center space-x-2 shadow-md hover:shadow-lg">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd" />
+                            </svg>
+                            <span>Download</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-10 text-center text-sm text-gray-500">
+                <p>VoiceFlow uses your browser's built-in speech synthesis with enhanced options</p>
+                <p class="mt-1">Supports multiple languages and voice styles</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

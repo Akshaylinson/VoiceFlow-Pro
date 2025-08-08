@@ -1,0 +1,1193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VoiceFlow Pro | AI-Powered Text-to-Speech API</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            DEFAULT: '#2563EB',
+                            light: '#3B82F6',
+                            dark: '#1D4ED8'
+                        },
+                        secondary: {
+                            DEFAULT: '#7C3AED',
+                            light: '#8B5CF6',
+                            dark: '#6D28D9'
+                        },
+                        accent: {
+                            DEFAULT: '#EC4899',
+                            light: '#F472B6',
+                            dark: '#DB2777'
+                        },
+                        dark: {
+                            DEFAULT: '#0F172A',
+                            light: '#1E293B'
+                        },
+                        light: {
+                            DEFAULT: '#F8FAFC',
+                            dark: '#F1F5F9'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        display: ['Inter', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-8px); }
+        }
+        
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.4); }
+            70% { box-shadow: 0 0 0 12px rgba(59, 130, 246, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0); }
+        }
+        
+        @keyframes wave {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+        
+        .gradient-text {
+            background: linear-gradient(90deg, #2563EB, #7C3AED);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        
+        .voice-wave {
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .voice-wave::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, 
+                transparent 0%, 
+                rgba(255,255,255,0.1) 50%, 
+                transparent 100%);
+            animation: wave 6s linear infinite;
+        }
+        
+        .voice-visualizer {
+            display: flex;
+            align-items: flex-end;
+            height: 24px;
+            gap: 3px;
+        }
+        
+        .voice-bar {
+            width: 4px;
+            background: linear-gradient(to top, #3B82F6, #8B5CF6);
+            border-radius: 2px;
+            animation: equalize 1.5s infinite ease-in-out;
+        }
+        
+        @keyframes equalize {
+            0%, 100% { height: 30%; opacity: 0.7; }
+            25% { height: 80%; opacity: 1; }
+            50% { height: 20%; opacity: 0.5; }
+            75% { height: 60%; opacity: 0.9; }
+        }
+        
+        .voice-bar:nth-child(1) { animation-delay: 0.1s; }
+        .voice-bar:nth-child(2) { animation-delay: 0.3s; }
+        .voice-bar:nth-child(3) { animation-delay: 0.5s; }
+        .voice-bar:nth-child(4) { animation-delay: 0.2s; }
+        .voice-bar:nth-child(5) { animation-delay: 0.4s; }
+        .voice-bar:nth-child(6) { animation-delay: 0.6s; }
+        .voice-bar:nth-child(7) { animation-delay: 0.7s; }
+        
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .hover-scale {
+            transition: transform 0.3s ease;
+        }
+        
+        .hover-scale:hover {
+            transform: translateY(-4px);
+        }
+        
+        .btn-primary {
+            background: linear-gradient(90deg, #2563EB, #7C3AED);
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px -5px rgba(37, 99, 235, 0.4);
+        }
+        
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+
+        /* Hero section layout */
+        .hero-container {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 2rem;
+        }
+        
+        @media (min-width: 1024px) {
+            .hero-container {
+                grid-template-columns: 1fr 1fr;
+                align-items: center;
+            }
+            
+            .hero-content {
+                padding-right: 2rem;
+            }
+            
+            .hero-code-container {
+                padding-left: 2rem;
+            }
+        }
+
+        /* Mobile menu styles */
+        .mobile-menu {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+        }
+        
+        .mobile-menu.open {
+            max-height: 500px;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .hero-code {
+                width: 100%;
+                overflow-x: auto;
+            }
+            
+            .voice-controls {
+                grid-template-columns: 1fr;
+            }
+            
+            .pricing-cards {
+                grid-template-columns: 1fr;
+            }
+            
+            .feature-cards {
+                grid-template-columns: 1fr;
+            }
+            
+            .footer-grid {
+                grid-template-columns: 1fr;
+                gap: 2rem;
+            }
+        }
+
+        @media (min-width: 769px) and (max-width: 1024px) {
+            .pricing-cards {
+                grid-template-columns: 1fr 1fr;
+            }
+            
+            .feature-cards {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+    </style>
+</head>
+<body class="bg-dark text-light font-sans">
+    <!-- Floating background elements -->
+    <div class="fixed inset-0 overflow-hidden -z-50">
+        <div class="absolute top-20 right-20 w-64 h-64 rounded-full bg-primary/10 blur-3xl animate-float"></div>
+        <div class="absolute bottom-10 left-10 w-80 h-80 rounded-full bg-secondary/10 blur-3xl animate-float" style="animation-delay: 2s;"></div>
+        <div class="absolute top-1/3 left-1/4 w-96 h-96 rounded-full bg-accent/10 blur-3xl animate-float" style="animation-delay: 4s;"></div>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="container mx-auto px-4 sm:px-6 py-4 sm:py-6 flex justify-between items-center">
+        <div class="flex items-center">
+            <!-- <div class="glass-effect p-2 rounded-lg mr-3 border border-primary/20">
+                <i class="fas fa-robot text-primary text-xl"></i>
+            </div> -->
+            <span class="text-xl font-bold gradient-text">VoiceFlow Pro</span>
+        </div>
+        
+        <!-- Desktop Navigation -->
+        <div class="hidden md:flex items-center space-x-8">
+            <a href="#features" class="text-gray-300 hover:text-white transition">Features</a>
+            <a href="#pricing" class="text-gray-300 hover:text-white transition">Pricing</a>
+            <a href="#demo" class="text-gray-300 hover:text-white transition">Demo</a>
+            <a href="#docs" class="text-gray-300 hover:text-white transition">API Docs</a>
+        </div>
+        
+        <div class="hidden md:flex items-center space-x-4">
+            <a href="#" class="btn-secondary px-4 py-2 rounded-lg">Sign In</a>
+            <a href="#" class="btn-primary px-4 py-2 rounded-lg">Get Started</a>
+        </div>
+        
+        <!-- Mobile menu button -->
+        <button id="mobile-menu-button" class="md:hidden text-gray-300 focus:outline-none">
+            <i class="fas fa-bars text-xl"></i>
+        </button>
+    </nav>
+    
+    <!-- Mobile Menu -->
+    <div id="mobile-menu" class="mobile-menu md:hidden container mx-auto px-4">
+        <div class="flex flex-col space-y-4 py-4 border-t border-dark-light">
+            <a href="#features" class="text-gray-300 hover:text-white">Features</a>
+            <a href="#pricing" class="text-gray-300 hover:text-white">Pricing</a>
+            <a href="#demo" class="text-gray-300 hover:text-white">Demo</a>
+            <a href="#docs" class="text-gray-300 hover:text-white">API Docs</a>
+            <div class="flex space-x-4 pt-2">
+                <a href="#" class="btn-secondary px-4 py-2 rounded-lg flex-1 text-center">Sign In</a>
+                <a href="#" class="btn-primary px-4 py-2 rounded-lg flex-1 text-center">Get Started</a>
+            </div>
+        </div>
+    </div>
+
+   <!-- Hero Section - Fully Responsive with Larger Code Box -->
+<section class="container mx-auto px-4 sm:px-6 py-12 lg:py-20">
+    <div class="hero-container">
+        <!-- Left content area -->
+        <div class="hero-content">
+            <h1 class="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-4 sm:mb-6">
+                <span class="gradient-text">AI-Powered</span> Text-to-Speech API
+            </h1>
+            <p class="text-lg sm:text-xl text-gray-300 mb-6 sm:mb-8 md:mb-10">
+                Transform text into natural-sounding speech with our enterprise-grade neural voice technology.
+            </p>
+            <div class="flex flex-col sm:flex-row gap-3 sm:gap-4 mb-8 sm:mb-12 md:mb-16">
+                <a href="#demo" class="btn-primary px-5 sm:px-6 md:px-8 py-2 sm:py-3 md:py-4 rounded-lg text-sm sm:text-base md:text-lg font-medium">Try Demo</a>
+                <a href="#pricing" class="btn-secondary px-5 sm:px-6 md:px-8 py-2 sm:py-3 md:py-4 rounded-lg text-sm sm:text-base md:text-lg font-medium">View Pricing</a>
+            </div>
+            
+           <div class="mb-6 sm:mb-8 md:mb-12">
+    <p class="text-center text-gray-400 text-xs sm:text-sm md:text-base mb-3 sm:mb-4 md:mb-6">TRUSTED BY INNOVATIVE COMPANIES WORLDWIDE</p>
+    <div class="flex flex-wrap justify-center items-center gap-3 sm:gap-4 md:gap-6 lg:gap-8 opacity-80">
+        <!-- Microsoft Logo -->
+        <img src="https://upload.wikimedia.org/wikipedia/commons/9/96/Microsoft_logo_%282012%29.svg" 
+             alt="Microsoft" 
+             class="h-5 sm:h-6 md:h-8 object-contain grayscale hover:grayscale-0 transition-all duration-300">
+        
+        <!-- Google Logo -->
+        <img src="https://upload.wikimedia.org/wikipedia/commons/2/2f/Google_2015_logo.svg" 
+             alt="Google" 
+             class="h-5 sm:h-6 md:h-8 object-contain grayscale hover:grayscale-0 transition-all duration-300">
+        
+        <!-- Amazon Logo -->
+        <img src="https://upload.wikimedia.org/wikipedia/commons/a/a9/Amazon_logo.svg" 
+             alt="Amazon" 
+             class="h-5 sm:h-6 md:h-8 object-contain grayscale hover:grayscale-0 transition-all duration-300">
+        
+        <!-- IBM Logo -->
+        <img src="https://upload.wikimedia.org/wikipedia/commons/5/51/IBM_logo.svg" 
+             alt="IBM" 
+             class="h-5 sm:h-6 md:h-8 object-contain grayscale hover:grayscale-0 transition-all duration-300">
+    </div>
+</div>
+        </div>
+        
+        <!-- Right content area with responsive code box -->
+        <div class="hero-code-container mt-8 sm:mt-0 sm:ml-6 md:ml-8 lg:ml-12">
+            <div class="glass-effect rounded-2xl p-1 w-full max-w-xs sm:max-w-sm md:max-w-lg">
+                <div class="bg-dark-light rounded-xl p-3 sm:p-4 md:p-6 text-left">
+                    <div class="flex items-center mb-3 sm:mb-4">
+                        <div class="w-2 h-2 sm:w-3 sm:h-3 rounded-full bg-red-500 mr-1 sm:mr-2"></div>
+                        <div class="w-2 h-2 sm:w-3 sm:h-3 rounded-full bg-yellow-500 mr-1 sm:mr-2"></div>
+                        <div class="w-2 h-2 sm:w-3 sm:h-3 rounded-full bg-green-500 mr-2 sm:mr-4"></div>
+                        <div class="text-xs sm:text-sm md:text-base text-gray-400 truncate">api.voiceflow.com/v1/synthesize</div>
+                    </div>
+                    <div class="bg-dark rounded-lg p-3 sm:p-4 md:p-6 overflow-x-auto">
+                        <pre class="text-gray-300 text-xs sm:text-sm md:text-base"><code>{
+  "text": "Welcome to VoiceFlow Pro API",
+  "voice": "en-US-Wavenet-A",
+  "speed": 1.0,
+  "pitch": 1.0,
+  "format": "mp3"
+}</code></pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<style>
+    /* Hero container responsive styles */
+    .hero-container {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+        align-items: center;
+    }
+    
+    @media (min-width: 640px) {
+        .hero-container {
+            gap: 2rem;
+        }
+    }
+    
+    @media (min-width: 1024px) {
+        .hero-container {
+            flex-direction: row;
+            align-items: flex-start;
+            gap: 3rem;
+        }
+        
+        .hero-content {
+            flex: 1;
+            padding-right: 2rem;
+        }
+        
+        .hero-code-container {
+            flex: 1;
+            max-width: 50%;
+        }
+    }
+
+    /* Code box responsive adjustments */
+    .glass-effect {
+        width: 100%;
+        max-width: 100%;
+    }
+    
+    pre code {
+        font-size: 0.75rem; /* Smaller on mobile */
+        line-height: 1.4; /* Tighter line height */
+        white-space: pre-wrap; /* Wrap text on small screens */
+        word-break: break-word; /* Prevent horizontal scrolling */
+    }
+    
+    @media (min-width: 640px) {
+        pre code {
+            font-size: 0.85rem;
+            line-height: 1.5;
+            white-space: pre;
+        }
+    }
+    
+    @media (min-width: 768px) {
+        pre code {
+            font-size: 0.9rem;
+        }
+    }
+
+    /* Mobile-specific adjustments */
+    @media (max-width: 639px) {
+        .hero-code-container {
+            width: 100%;
+            max-width: 100%;
+            margin-left: 0;
+        }
+        
+        .glass-effect {
+            width: calc(100% - 2rem);
+            margin: 0 auto;
+        }
+    }
+</style>
+
+    <!-- Features Section -->
+    <section id="features" class="container mx-auto px-4 sm:px-6 py-12 sm:py-20">
+        <div class="text-center mb-12 sm:mb-16">
+            <h2 class="text-2xl sm:text-3xl md:text-4xl font-bold mb-3 sm:mb-4">Enterprise-Grade Voice Synthesis</h2>
+            <p class="text-lg sm:text-xl text-gray-300 max-w-2xl mx-auto">Everything you need to integrate natural-sounding speech into your applications</p>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 feature-cards">
+            <div class="glass-effect p-6 sm:p-8 rounded-xl hover-scale">
+                <div class="text-primary text-2xl sm:text-3xl mb-3 sm:mb-4">
+                    <i class="fas fa-brain"></i>
+                </div>
+                <h3 class="text-lg sm:text-xl font-bold mb-2 sm:mb-3">Neural TTS</h3>
+                <p class="text-gray-300 text-sm sm:text-base">Our AI models generate human-like speech with natural intonation and emotional inflection.</p>
+            </div>
+            
+            <div class="glass-effect p-6 sm:p-8 rounded-xl hover-scale">
+                <div class="text-accent text-2xl sm:text-3xl mb-3 sm:mb-4">
+                    <i class="fas fa-globe"></i>
+                </div>
+                <h3 class="text-lg sm:text-xl font-bold mb-2 sm:mb-3">100+ Languages</h3>
+                <p class="text-gray-300 text-sm sm:text-base">Support for dozens of languages and dialects with regional accents and pronunciations.</p>
+            </div>
+            
+            <div class="glass-effect p-6 sm:p-8 rounded-xl hover-scale">
+                <div class="text-secondary text-2xl sm:text-3xl mb-3 sm:mb-4">
+                    <i class="fas fa-tachometer-alt"></i>
+                </div>
+                <h3 class="text-lg sm:text-xl font-bold mb-2 sm:mb-3">Low Latency</h3>
+                <p class="text-gray-300 text-sm sm:text-base">High-performance API with global CDN for fast response times anywhere in the world.</p>
+            </div>
+            
+            <div class="glass-effect p-6 sm:p-8 rounded-xl hover-scale">
+                <div class="text-primary text-2xl sm:text-3xl mb-3 sm:mb-4">
+                    <i class="fas fa-sliders-h"></i>
+                </div>
+                <h3 class="text-lg sm:text-xl font-bold mb-2 sm:mb-3">Custom Voices</h3>
+                <p class="text-gray-300 text-sm sm:text-base">Create custom voice profiles tailored to your brand identity and tone.</p>
+            </div>
+            
+            <div class="glass-effect p-6 sm:p-8 rounded-xl hover-scale">
+                <div class="text-accent text-2xl sm:text-3xl mb-3 sm:mb-4">
+                    <i class="fas fa-shield-alt"></i>
+                </div>
+                <h3 class="text-lg sm:text-xl font-bold mb-2 sm:mb-3">Enterprise Security</h3>
+                <p class="text-gray-300 text-sm sm:text-base">SOC 2 compliant with end-to-end encryption and strict data privacy controls.</p>
+            </div>
+            
+            <div class="glass-effect p-6 sm:p-8 rounded-xl hover-scale">
+                <div class="text-secondary text-2xl sm:text-3xl mb-3 sm:mb-4">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+                <h3 class="text-lg sm:text-xl font-bold mb-2 sm:mb-3">Real-time Analytics</h3>
+                <p class="text-gray-300 text-sm sm:text-base">Detailed usage metrics and performance monitoring for your voice applications.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Demo Section -->
+    <section id="demo" class="bg-dark-light py-12 sm:py-20">
+        <div class="container mx-auto px-4 sm:px-6">
+            <div class="text-center mb-12 sm:mb-16">
+                <h2 class="text-2xl sm:text-3xl md:text-4xl font-bold mb-3 sm:mb-4">Experience the Difference</h2>
+                <p class="text-lg sm:text-xl text-gray-300 max-w-2xl mx-auto">Try our interactive demo to hear the quality of our neural voices</p>
+            </div>
+            
+            <div class="glass-effect rounded-2xl overflow-hidden max-w-4xl mx-auto">
+                <div class="p-4 sm:p-6 md:p-8">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+                        <div>
+                            <div class="flex items-center mb-2 sm:mb-3">
+                                <i class="fas fa-user-voice text-primary mr-2 text-sm sm:text-base"></i>
+                                <label class="text-xs sm:text-sm font-medium text-gray-300">VOICE PROFILE</label>
+                            </div>
+                            <div class="relative">
+                                <select id="voices" class="w-full bg-dark border border-dark-light rounded-lg px-3 sm:px-4 py-2 sm:py-3 pl-8 sm:pl-10 text-sm sm:text-base text-gray-200 focus:ring-2 focus:ring-primary focus:border-primary appearance-none">
+                                    <option value="">Loading voices...</option>
+                                </select>
+                                <div class="absolute left-2 sm:left-3 top-2.5 sm:top-3.5 text-primary text-sm sm:text-base">
+                                    <i class="fas fa-chevron-down"></i>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <div class="flex items-center mb-2 sm:mb-3">
+                                <i class="fas fa-sliders-h text-primary mr-2 text-sm sm:text-base"></i>
+                                <label class="text-xs sm:text-sm font-medium text-gray-300">VOICE PREVIEW</label>
+                            </div>
+                            <div class="flex items-center space-x-2 sm:space-x-3">
+                                <button id="preview-btn" class="bg-primary/10 hover:bg-primary/20 text-primary h-10 sm:h-12 w-10 sm:w-12 rounded-full flex items-center justify-center">
+                                    <i class="fas fa-play text-sm sm:text-base"></i>
+                                </button>
+                                <div class="flex-1 h-10 sm:h-12 rounded-lg voice-wave bg-dark">
+                                    <div class="h-full w-full flex items-center px-3 sm:px-4">
+                                        <div class="voice-visualizer flex-1">
+                                            <div class="voice-bar"></div>
+                                            <div class="voice-bar"></div>
+                                            <div class="voice-bar"></div>
+                                            <div class="voice-bar"></div>
+                                            <div class="voice-bar"></div>
+                                            <div class="voice-bar"></div>
+                                            <div class="voice-bar"></div>
+                                        </div>
+                                        <span id="preview-text" class="ml-2 sm:ml-4 text-xs sm:text-sm text-gray-400 whitespace-nowrap">Ready for neural synthesis</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="p-4 sm:p-6 md:p-8 border-t border-dark-light">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 voice-controls">
+                        <div>
+                            <div class="flex items-center justify-between mb-1 sm:mb-2">
+                                <div class="flex items-center">
+                                    <i class="fas fa-tachometer-alt text-primary mr-1 sm:mr-2 text-xs sm:text-sm"></i>
+                                    <label class="text-xs font-medium text-gray-400">SPEED</label>
+                                </div>
+                                <span id="rate-value" class="text-xs font-mono text-primary">1.0x</span>
+                            </div>
+                            <input type="range" id="rate" min="0.5" max="2" value="1" step="0.1" 
+                                class="w-full h-1.5 bg-dark-light rounded-lg appearance-none cursor-pointer accent-primary">
+                        </div>
+
+                        <div>
+                            <div class="flex items-center justify-between mb-1 sm:mb-2">
+                                <div class="flex items-center">
+                                    <i class="fas fa-wave-square text-primary mr-1 sm:mr-2 text-xs sm:text-sm"></i>
+                                    <label class="text-xs font-medium text-gray-400">PITCH</label>
+                                </div>
+                                <span id="pitch-value" class="text-xs font-mono text-primary">1.0</span>
+                            </div>
+                            <input type="range" id="pitch" min="0.5" max="1.5" value="1" step="0.1" 
+                                class="w-full h-1.5 bg-dark-light rounded-lg appearance-none cursor-pointer accent-primary">
+                        </div>
+
+                        <div>
+                            <div class="flex items-center justify-between mb-1 sm:mb-2">
+                                <div class="flex items-center">
+                                    <i class="fas fa-volume-up text-primary mr-1 sm:mr-2 text-xs sm:text-sm"></i>
+                                    <label class="text-xs font-medium text-gray-400">VOLUME</label>
+                                </div>
+                                <span id="volume-value" class="text-xs font-mono text-primary">100%</span>
+                            </div>
+                            <input type="range" id="volume" min="0" max="1" value="1" step="0.1" 
+                                class="w-full h-1.5 bg-dark-light rounded-lg appearance-none cursor-pointer accent-primary">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="p-4 sm:p-6 md:p-8 border-t border-dark-light">
+                    <div class="flex items-center justify-between mb-2 sm:mb-3">
+                        <div class="flex items-center">
+                            <i class="fas fa-align-left text-primary mr-1 sm:mr-2 text-sm sm:text-base"></i>
+                            <label class="text-xs sm:text-sm font-medium text-gray-300">TEXT INPUT</label>
+                        </div>
+                        <span id="char-count" class="text-xs text-primary bg-primary/10 px-2 py-0.5 sm:py-1 rounded-full">0/5000</span>
+                    </div>
+                    <div class="relative">
+                        <textarea id="text" rows="4" 
+                            class="w-full bg-dark border border-dark-light rounded-lg px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base text-gray-200 focus:ring-2 focus:ring-primary focus:border-primary resize-none"
+                            placeholder="Enter text to synthesize...">Welcome to VoiceFlow Pro, the enterprise-grade text-to-speech API with natural sounding AI voices and advanced customization options.</textarea>
+                        <button id="voice-input-btn" class="absolute right-2 sm:right-3 bottom-2 sm:bottom-3 bg-primary/10 hover:bg-primary/20 text-primary p-1.5 sm:p-2 rounded-full text-sm sm:text-base">
+                            <i class="fas fa-microphone"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-6 sm:mt-8 flex justify-center space-x-3 sm:space-x-4">
+                <button id="play-toggle" class="bg-primary hover:bg-primary-dark text-white h-12 sm:h-14 w-12 sm:w-14 rounded-full flex items-center justify-center text-lg sm:text-xl">
+                    <i class="fas fa-play" id="play-icon"></i>
+                </button>
+                <button id="stop" class="bg-dark-light hover:bg-dark text-gray-300 h-12 sm:h-14 w-12 sm:w-14 rounded-full flex items-center justify-center text-lg sm:text-xl">
+                    <i class="fas fa-stop"></i>
+                </button>
+                <button id="download" class="bg-accent/10 hover:bg-accent/20 text-accent h-12 sm:h-14 w-12 sm:w-14 rounded-full flex items-center justify-center text-lg sm:text-xl">
+                    <i class="fas fa-download"></i>
+                </button>
+                <button id="copy" class="bg-secondary/10 hover:bg-secondary/20 text-secondary h-12 sm:h-14 w-12 sm:w-14 rounded-full flex items-center justify-center text-lg sm:text-xl">
+                    <i class="fas fa-copy"></i>
+                </button>
+            </div>
+
+            <div id="status-indicator" class="glass-effect rounded-lg p-3 sm:p-4 mt-6 sm:mt-8 max-w-4xl mx-auto hidden">
+                <div class="flex items-center">
+                    <div class="w-2 h-2 sm:w-3 sm:h-3 rounded-full bg-gray-500 mr-2 sm:mr-3 animate-pulse" id="status-light"></div>
+                    <span id="status-text" class="text-xs sm:text-sm text-gray-300">Ready</span>
+                    <div class="ml-auto flex items-center space-x-1 sm:space-x-2 text-xs text-primary">
+                        <span id="time-elapsed">00:00</span>
+                        <span>/</span>
+                        <span id="time-total">00:00</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Pricing Section -->
+    <section id="pricing" class="container mx-auto px-4 sm:px-6 py-12 sm:py-20">
+        <div class="text-center mb-12 sm:mb-16">
+            <h2 class="text-2xl sm:text-3xl md:text-4xl font-bold mb-3 sm:mb-4">Simple, Transparent Pricing</h2>
+            <p class="text-lg sm:text-xl text-gray-300 max-w-2xl mx-auto">Pay only for what you use with our flexible pricing plans</p>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 max-w-5xl mx-auto pricing-cards">
+            <div class="glass-effect p-6 sm:p-8 rounded-xl hover-scale">
+                <h3 class="text-lg sm:text-xl font-bold mb-1 sm:mb-2">Starter</h3>
+                <p class="text-gray-300 text-sm sm:text-base mb-4 sm:mb-6">Perfect for small projects and testing</p>
+                <div class="text-3xl sm:text-4xl font-bold mb-4 sm:mb-6">$9<span class="text-base sm:text-lg text-gray-400">/month</span></div>
+                <ul class="space-y-2 sm:space-y-3 mb-6 sm:mb-8 text-sm sm:text-base">
+                    <li class="flex items-center">
+                        <i class="fas fa-check text-primary mr-2"></i>
+                        <span>50,000 characters/month</span>
+                    </li>
+                    <li class="flex items-center">
+                        <i class="fas fa-check text-primary mr-2"></i>
+                        <span>Standard voices</span>
+                    </li>
+                    <li class="flex items-center">
+                        <i class="fas fa-check text-primary mr-2"></i>
+                        <span>Basic analytics</span>
+                    </li>
+                    <li class="flex items-center text-gray-500">
+                        <i class="fas fa-times text-gray-500 mr-2"></i>
+                        <span>No custom voices</span>
+                    </li>
+                </ul>
+                <a href="#" class="btn-secondary w-full py-2 sm:py-3 rounded-lg text-center block text-sm sm:text-base">Get Started</a>
+            </div>
+            
+            <div class="glass-effect p-6 sm:p-8 rounded-xl border-2 border-primary hover-scale relative">
+                <div class="absolute top-0 right-0 bg-primary text-white text-xs font-bold px-2 py-0.5 sm:px-3 sm:py-1 rounded-bl-lg rounded-tr-lg">POPULAR</div>
+                <h3 class="text-lg sm:text-xl font-bold mb-1 sm:mb-2">Professional</h3>
+                <p class="text-gray-300 text-sm sm:text-base mb-4 sm:mb-6">For growing businesses and applications</p>
+                <div class="text-3xl sm:text-4xl font-bold mb-4 sm:mb-6">$49<span class="text-base sm:text-lg text-gray-400">/month</span></div>
+                <ul class="space-y-2 sm:space-y-3 mb-6 sm:mb-8 text-sm sm:text-base">
+                    <li class="flex items-center">
+                        <i class="fas fa-check text-primary mr-2"></i>
+                        <span>250,000 characters/month</span>
+                    </li>
+                    <li class="flex items-center">
+                        <i class="fas fa-check text-primary mr-2"></i>
+                        <span>Premium neural voices</span>
+                    </li>
+                    <li class="flex items-center">
+                        <i class="fas fa-check text-primary mr-2"></i>
+                        <span>Advanced analytics</span>
+                    </li>
+                    <li class="flex items-center">
+                        <i class="fas fa-check text-primary mr-2"></i>
+                        <span>Basic voice customization</span>
+                    </li>
+                </ul>
+                <a href="#" class="btn-primary w-full py-2 sm:py-3 rounded-lg text-center block text-sm sm:text-base">Get Started</a>
+            </div>
+            
+            <div class="glass-effect p-6 sm:p-8 rounded-xl hover-scale">
+                <h3 class="text-lg sm:text-xl font-bold mb-1 sm:mb-2">Enterprise</h3>
+                <p class="text-gray-300 text-sm sm:text-base mb-4 sm:mb-6">For large-scale deployments</p>
+                <div class="text-3xl sm:text-4xl font-bold mb-4 sm:mb-6">Custom</div>
+                <ul class="space-y-2 sm:space-y-3 mb-6 sm:mb-8 text-sm sm:text-base">
+                    <li class="flex items-center">
+                        <i class="fas fa-check text-primary mr-2"></i>
+                        <span>Millions of characters</span>
+                    </li>
+                    <li class="flex items-center">
+                        <i class="fas fa-check text-primary mr-2"></i>
+                        <span>All premium voices</span>
+                    </li>
+                    <li class="flex items-center">
+                        <i class="fas fa-check text-primary mr-2"></i>
+                        <span>Custom voice creation</span>
+                    </li>
+                    <li class="flex items-center">
+                        <i class="fas fa-check text-primary mr-2"></i>
+                        <span>Priority support & SLA</span>
+                    </li>
+                </ul>
+                <a href="#" class="btn-secondary w-full py-2 sm:py-3 rounded-lg text-center block text-sm sm:text-base">Contact Sales</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="bg-primary/10 py-12 sm:py-20">
+        <div class="container mx-auto px-4 sm:px-6 text-center">
+            <h2 class="text-2xl sm:text-3xl md:text-4xl font-bold mb-4 sm:mb-6">Ready to Transform Your User Experience?</h2>
+            <p class="text-lg sm:text-xl text-gray-300 max-w-2xl mx-auto mb-8 sm:mb-10">Get started with VoiceFlow Pro today and bring your applications to life with natural-sounding speech.</p>
+            <div class="flex flex-col sm:flex-row justify-center gap-3 sm:gap-4">
+                <a href="#" class="btn-primary px-6 sm:px-8 py-3 sm:py-4 rounded-lg text-base sm:text-lg font-medium">Start Free Trial</a>
+                <a href="#" class="btn-secondary px-6 sm:px-8 py-3 sm:py-4 rounded-lg text-base sm:text-lg font-medium">Schedule Demo</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-dark-light py-8 sm:py-12">
+        <div class="container mx-auto px-4 sm:px-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8 mb-8 sm:mb-12 footer-grid">
+                <div>
+                    <div class="flex items-center mb-3 sm:mb-4">
+                        <!-- <div class="glass-effect p-2 rounded-lg mr-2 sm:mr-3">
+                            <i class="fas fa-robot text-primary"></i>
+                        </div> -->
+                        <span class="text-lg sm:text-xl font-bold gradient-text">VoiceFlow Pro</span>
+                    </div>
+                    <p class="text-gray-400 text-sm sm:text-base mb-3 sm:mb-4">The most advanced text-to-speech API for developers and businesses.</p>
+                    <div class="flex space-x-3 sm:space-x-4">
+                        <a href="#" class="text-gray-400 hover:text-white text-sm sm:text-base"><i class="fab fa-twitter"></i></a>
+                        <a href="#" class="text-gray-400 hover:text-white text-sm sm:text-base"><i class="fab fa-github"></i></a>
+                        <a href="#" class="text-gray-400 hover:text-white text-sm sm:text-base"><i class="fab fa-linkedin"></i></a>
+                        <a href="#" class="text-gray-400 hover:text-white text-sm sm:text-base"><i class="fab fa-discord"></i></a>
+                    </div>
+                </div>
+                
+                <div>
+                    <h3 class="text-base sm:text-lg font-bold mb-2 sm:mb-4">Product</h3>
+                    <ul class="space-y-1 sm:space-y-2 text-sm sm:text-base">
+                        <li><a href="#" class="text-gray-400 hover:text-white">Features</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white">Pricing</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white">Demo</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white">Roadmap</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h3 class="text-base sm:text-lg font-bold mb-2 sm:mb-4">Resources</h3>
+                    <ul class="space-y-1 sm:space-y-2 text-sm sm:text-base">
+                        <li><a href="#" class="text-gray-400 hover:text-white">Documentation</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white">API Reference</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white">Tutorials</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white">Blog</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h3 class="text-base sm:text-lg font-bold mb-2 sm:mb-4">Company</h3>
+                    <ul class="space-y-1 sm:space-y-2 text-sm sm:text-base">
+                        <li><a href="#" class="text-gray-400 hover:text-white">About Us</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white">Careers</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white">Contact</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white">Legal</a></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="border-t border-dark pt-6 sm:pt-8 flex flex-col md:flex-row justify-between items-center">
+                <p class="text-gray-500 text-xs sm:text-sm mb-3 md:mb-0">© <span id="current-year"></span> VoiceFlow Technologies. All rights reserved.</p>
+                <div class="flex space-x-4 sm:space-x-6 text-xs sm:text-sm">
+                    <a href="#" class="text-gray-500 hover:text-white">Privacy Policy</a>
+                    <a href="#" class="text-gray-500 hover:text-white">Terms of Service</a>
+                    <a href="#" class="text-gray-500 hover:text-white">Cookie Policy</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Set current year in footer
+            document.getElementById('current-year').textContent = new Date().getFullYear();
+
+            // Mobile menu toggle
+            const mobileMenuButton = document.getElementById('mobile-menu-button');
+            const mobileMenu = document.getElementById('mobile-menu');
+            
+            mobileMenuButton.addEventListener('click', function() {
+                mobileMenu.classList.toggle('open');
+                const icon = mobileMenuButton.querySelector('i');
+                if (mobileMenu.classList.contains('open')) {
+                    icon.className = 'fas fa-times text-xl';
+                } else {
+                    icon.className = 'fas fa-bars text-xl';
+                }
+            });
+
+            // DOM Elements
+            const textInput = document.getElementById('text');
+            const voicesSelect = document.getElementById('voices');
+            const previewBtn = document.getElementById('preview-btn');
+            const previewText = document.getElementById('preview-text');
+            const playToggleBtn = document.getElementById('play-toggle');
+            const playIcon = document.getElementById('play-icon');
+            const stopBtn = document.getElementById('stop');
+            const downloadBtn = document.getElementById('download');
+            const copyBtn = document.getElementById('copy');
+            const voiceInputBtn = document.getElementById('voice-input-btn');
+            const statusIndicator = document.getElementById('status-indicator');
+            const statusLight = document.getElementById('status-light');
+            const statusText = document.getElementById('status-text');
+            const timeElapsed = document.getElementById('time-elapsed');
+            const timeTotal = document.getElementById('time-total');
+            const charCount = document.getElementById('char-count');
+            
+            // Slider controls
+            const rateSlider = document.getElementById('rate');
+            const pitchSlider = document.getElementById('pitch');
+            const volumeSlider = document.getElementById('volume');
+            const rateValue = document.getElementById('rate-value');
+            const pitchValue = document.getElementById('pitch-value');
+            const volumeValue = document.getElementById('volume-value');
+
+            // Speech synthesis
+            const synth = window.speechSynthesis;
+            let utterance = null;
+            let voices = [];
+            let isPlaying = false;
+            let isPaused = false;
+            let startTime = 0;
+            let timerInterval = null;
+            let totalDuration = 0;
+
+            // Initialize the app
+            init();
+
+            function init() {
+                // Load voices when they become available
+                synth.onvoiceschanged = loadVoices;
+                loadVoices();
+
+                // Set up event listeners
+                setupEventListeners();
+
+                // Update character count
+                updateCharCount();
+            }
+
+            function loadVoices() {
+                voices = synth.getVoices();
+                voicesSelect.innerHTML = '';
+
+                // Filter for English voices (can be adjusted)
+                const englishVoices = voices.filter(voice => voice.lang.includes('en'));
+                
+                if (englishVoices.length === 0) {
+                    voicesSelect.innerHTML = '<option value="">No English voices found</option>';
+                    return;
+                }
+
+                // Populate voice options
+                englishVoices.forEach(voice => {
+                    const option = document.createElement('option');
+                    option.textContent = `${voice.name} (${voice.lang})`;
+                    option.setAttribute('data-name', voice.name);
+                    option.setAttribute('data-lang', voice.lang);
+                    voicesSelect.appendChild(option);
+                });
+
+                // Set default voice (try to find a natural sounding voice)
+                const defaultVoice = englishVoices.find(voice => voice.name.includes('Google') && voice.name.includes('English')) || 
+                                    englishVoices.find(voice => voice.name.includes('Microsoft') && voice.name.includes('English')) || 
+                                    englishVoices[0];
+                
+                if (defaultVoice) {
+                    const voiceIndex = Array.from(voicesSelect.options).findIndex(
+                        option => option.getAttribute('data-name') === defaultVoice.name
+                    );
+                    voicesSelect.selectedIndex = voiceIndex;
+                }
+            }
+
+            function setupEventListeners() {
+                // Text input events
+                textInput.addEventListener('input', updateCharCount);
+
+                // Voice selection
+                voicesSelect.addEventListener('change', () => {
+                    if (isPlaying) {
+                        stopSpeech();
+                    }
+                });
+
+                // Preview button
+                previewBtn.addEventListener('click', previewVoice);
+
+                // Play/Pause toggle
+                playToggleBtn.addEventListener('click', togglePlayPause);
+
+                // Stop button
+                stopBtn.addEventListener('click', stopSpeech);
+
+                // Download button
+                downloadBtn.addEventListener('click', downloadAudio);
+
+                // Copy button
+                copyBtn.addEventListener('click', copyText);
+
+                // Voice input button (placeholder - would need additional implementation)
+                voiceInputBtn.addEventListener('click', () => {
+                    showStatus('Voice input requires microphone access', 'warning');
+                });
+
+                // Slider controls
+                rateSlider.addEventListener('input', updateRate);
+                pitchSlider.addEventListener('input', updatePitch);
+                volumeSlider.addEventListener('input', updateVolume);
+
+                // Update slider values initially
+                updateRate();
+                updatePitch();
+                updateVolume();
+            }
+
+            function updateCharCount() {
+                const count = textInput.value.length;
+                charCount.textContent = `${count}/5000`;
+            }
+
+            function updateRate() {
+                const value = parseFloat(rateSlider.value);
+                rateValue.textContent = `${value.toFixed(1)}x`;
+            }
+
+            function updatePitch() {
+                const value = parseFloat(pitchSlider.value);
+                pitchValue.textContent = value.toFixed(1);
+            }
+
+            function updateVolume() {
+                const value = parseFloat(volumeSlider.value);
+                volumeValue.textContent = `${Math.round(value * 100)}%`;
+            }
+
+            function previewVoice() {
+                if (isPlaying) {
+                    stopSpeech();
+                }
+
+                const selectedOption = voicesSelect.selectedOptions[0];
+                const voiceName = selectedOption ? selectedOption.getAttribute('data-name') : null;
+                const voice = voices.find(v => v.name === voiceName);
+
+                if (!voice) {
+                    showStatus('No voice selected', 'error');
+                    return;
+                }
+
+                // Use a short preview text
+                const previewTextContent = "This is a preview of the selected voice. Listen to how it sounds.";
+                speakText(previewTextContent, voice, true);
+            }
+
+            function togglePlayPause() {
+                if (isPlaying && !isPaused) {
+                    pauseSpeech();
+                } else if (isPlaying && isPaused) {
+                    resumeSpeech();
+                } else {
+                    startSpeech();
+                }
+            }
+
+            function startSpeech() {
+                const text = textInput.value.trim();
+                if (!text) {
+                    showStatus('No text to speak', 'error');
+                    return;
+                }
+
+                const selectedOption = voicesSelect.selectedOptions[0];
+                const voiceName = selectedOption ? selectedOption.getAttribute('data-name') : null;
+                const voice = voices.find(v => v.name === voiceName);
+
+                if (!voice) {
+                    showStatus('No voice selected', 'error');
+                    return;
+                }
+
+                speakText(text, voice);
+            }
+
+            function speakText(text, voice, isPreview = false) {
+                if (utterance) {
+                    synth.cancel();
+                }
+
+                utterance = new SpeechSynthesisUtterance(text);
+                utterance.voice = voice;
+                utterance.rate = parseFloat(rateSlider.value);
+                utterance.pitch = parseFloat(pitchSlider.value);
+                utterance.volume = parseFloat(volumeSlider.value);
+
+                // Estimate duration (very rough estimate)
+                const wordCount = text.split(/\s+/).length;
+                totalDuration = Math.max(1, Math.floor(wordCount / (3 * utterance.rate))) * 1000;
+                updateTimeDisplay(0, totalDuration);
+
+                // Event listeners for the utterance
+                utterance.onstart = () => {
+                    isPlaying = true;
+                    isPaused = false;
+                    startTime = Date.now();
+                    startTimer();
+                    playIcon.className = 'fas fa-pause';
+                    showStatus(isPreview ? 'Playing preview...' : 'Playing...', 'active');
+                    statusLight.className = 'w-2 h-2 sm:w-3 sm:h-3 rounded-full bg-primary mr-2 sm:mr-3 animate-pulse';
+                    
+                    // Start visualizer animation
+                    animateVisualizer(true);
+                };
+
+                utterance.onend = () => {
+                    stopTimer();
+                    isPlaying = false;
+                    isPaused = false;
+                    playIcon.className = 'fas fa-play';
+                    showStatus('Ready', 'inactive');
+                    statusLight.className = 'w-2 h-2 sm:w-3 sm:h-3 rounded-full bg-gray-500 mr-2 sm:mr-3';
+                    
+                    // Stop visualizer animation
+                    animateVisualizer(false);
+                };
+
+                utterance.onerror = (event) => {
+                    console.error('SpeechSynthesis error:', event);
+                    stopTimer();
+                    isPlaying = false;
+                    isPaused = false;
+                    playIcon.className = 'fas fa-play';
+                    showStatus('Error occurred', 'error');
+                    statusLight.className = 'w-2 h-2 sm:w-3 sm:h-3 rounded-full bg-accent mr-2 sm:mr-3';
+                    
+                    // Stop visualizer animation
+                    animateVisualizer(false);
+                };
+
+                utterance.onpause = () => {
+                    isPaused = true;
+                    stopTimer();
+                    playIcon.className = 'fas fa-play';
+                    showStatus('Paused', 'inactive');
+                    statusLight.className = 'w-2 h-2 sm:w-3 sm:h-3 rounded-full bg-secondary mr-2 sm:mr-3';
+                    
+                    // Stop visualizer animation
+                    animateVisualizer(false);
+                };
+
+                utterance.onresume = () => {
+                    isPaused = false;
+                    startTimer();
+                    playIcon.className = 'fas fa-pause';
+                    showStatus('Playing...', 'active');
+                    statusLight.className = 'w-2 h-2 sm:w-3 sm:h-3 rounded-full bg-primary mr-2 sm:mr-3 animate-pulse';
+                    
+                    // Start visualizer animation
+                    animateVisualizer(true);
+                };
+
+                synth.speak(utterance);
+            }
+
+            function animateVisualizer(active) {
+                const bars = document.querySelectorAll('.voice-bar');
+                if (active) {
+                    bars.forEach(bar => {
+                        bar.style.animationPlayState = 'running';
+                    });
+                } else {
+                    bars.forEach(bar => {
+                        bar.style.animationPlayState = 'paused';
+                    });
+                }
+            }
+
+            function pauseSpeech() {
+                if (isPlaying && !isPaused) {
+                    synth.pause();
+                }
+            }
+
+            function resumeSpeech() {
+                if (isPlaying && isPaused) {
+                    synth.resume();
+                }
+            }
+
+            function stopSpeech() {
+                synth.cancel();
+                stopTimer();
+                isPlaying = false;
+                isPaused = false;
+                playIcon.className = 'fas fa-play';
+                showStatus('Ready', 'inactive');
+                statusLight.className = 'w-2 h-2 sm:w-3 sm:h-3 rounded-full bg-gray-500 mr-2 sm:mr-3';
+                updateTimeDisplay(0, totalDuration);
+                
+                // Stop visualizer animation
+                animateVisualizer(false);
+            }
+
+            function startTimer() {
+                stopTimer();
+                const startTime = Date.now() - (totalDuration - (totalDuration * (synth.paused ? synth.pauseTime / totalDuration : 1)));
+                
+                timerInterval = setInterval(() => {
+                    const elapsed = Date.now() - startTime;
+                    updateTimeDisplay(Math.min(elapsed, totalDuration), totalDuration);
+                }, 100);
+            }
+
+            function stopTimer() {
+                if (timerInterval) {
+                    clearInterval(timerInterval);
+                    timerInterval = null;
+                }
+            }
+
+            function updateTimeDisplay(elapsed, total) {
+                timeElapsed.textContent = formatTime(elapsed);
+                timeTotal.textContent = formatTime(total);
+            }
+
+            function formatTime(ms) {
+                const seconds = Math.floor(ms / 1000);
+                const minutes = Math.floor(seconds / 60);
+                const remainingSeconds = seconds % 60;
+                return `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
+            }
+
+            function showStatus(message, type) {
+                statusText.textContent = message;
+                statusIndicator.classList.remove('hidden');
+                
+                // Remove all color classes
+                statusLight.classList.remove('bg-gray-500', 'bg-primary', 'bg-accent', 'bg-secondary');
+                
+                // Add appropriate class based on type
+                switch(type) {
+                    case 'active':
+                        statusLight.classList.add('bg-primary');
+                        statusText.className = 'text-xs sm:text-sm text-primary';
+                        break;
+                    case 'error':
+                        statusLight.classList.add('bg-accent');
+                        statusText.className = 'text-xs sm:text-sm text-accent';
+                        break;
+                    case 'inactive':
+                        statusLight.classList.add('bg-gray-500');
+                        statusText.className = 'text-xs sm:text-sm text-gray-300';
+                        break;
+                    case 'warning':
+                        statusLight.classList.add('bg-secondary');
+                        statusText.className = 'text-xs sm:text-sm text-secondary';
+                        break;
+                    default:
+                        statusLight.classList.add('bg-gray-500');
+                        statusText.className = 'text-xs sm:text-sm text-gray-300';
+                }
+            }
+
+            function downloadAudio() {
+                showStatus('Preparing audio export...', 'active');
+                
+                // Simulate processing delay
+                setTimeout(() => {
+                    showStatus('Audio export requires API integration', 'warning');
+                }, 1500);
+            }
+
+            function copyText() {
+                textInput.select();
+                document.execCommand('copy');
+                
+                // Show temporary feedback
+                const originalText = copyBtn.innerHTML;
+                copyBtn.innerHTML = '<i class="fas fa-check"></i>';
+                showStatus('Text copied to clipboard', 'active');
+                
+                setTimeout(() => {
+                    copyBtn.innerHTML = originalText;
+                }, 2000);
+            }
+        });
+    </script>
+</body>
+</html>
